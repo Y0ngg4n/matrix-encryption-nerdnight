@@ -1,23 +1,272 @@
 <!doctype html>
 <html lang="en">
 	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+		/>
 
 		<title>reveal.js</title>
 
-		<link rel="stylesheet" href="dist/reset.css">
-		<link rel="stylesheet" href="dist/reveal.css">
-		<link rel="stylesheet" href="dist/theme/black.css">
+		<link rel="stylesheet" href="dist/reset.css" />
+		<link rel="stylesheet" href="dist/reveal.css" />
+		<link rel="stylesheet" href="dist/theme/black.css" />
 
 		<!-- Theme used for syntax highlighted code -->
-		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<link rel="stylesheet" href="plugin/highlight/monokai.css" />
 	</head>
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
+				<section
+					data-background-image="images/hero_dancing_lines.svg"
+					data-background-size="100%"
+				>
+					<img width="500vw" src="images/matrix-logo-white.svg" />
+					<h1>Verschlüsselung</h1>
+					<h2>Ist das eigentlich so sicher?</h2>
+				</section>
+				<section>
+					<h3>Matrix / Signal</h3>
+					<table class="wp-block-table is-style-stripes">
+						<tbody>
+							<tr>
+								<td>Protocol</td>
+								<td>Olm (Matrix)</td>
+								<td>OMEMO (Signal)</td>
+							</tr>
+							<tr>
+								<td>IdentityKey</td>
+								<td>Curve25519</td>
+								<td>X25519</td>
+							</tr>
+							<tr>
+								<td>FingerprintKey⁽¹⁾</td>
+								<td>Ed25519</td>
+								<td>none</td>
+							</tr>
+							<tr>
+								<td>PreKeys</td>
+								<td>Curve25519</td>
+								<td>X25519</td>
+							</tr>
+							<tr>
+								<td>SignedPreKeys⁽²⁾</td>
+								<td>none</td>
+								<td>X25519</td>
+							</tr>
+							<tr>
+								<td>Key Exchange<br />Algorithm⁽³⁾</td>
+								<td>Triple Diffie-Hellman<br />(3DH)</td>
+								<td>Extended Triple<br />Diffie-Hellman (X3DH)</td>
+							</tr>
+							<tr>
+								<td>Ratcheting Algoritm</td>
+								<td>Double Ratchet</td>
+								<td>Double Ratchet</td>
+							</tr>
+						</tbody>
+					</table>
+				</section>
+				<section
+					data-background-image="images/hero_dancing_lines.svg"
+					data-background-size="100%"
+				>
+					<h3>OMEMO</h3>
+					<ul>
+						<li>
+							Verschlüsselt jede Nachricht mit einem neuen Ratchet-Keypair
+						</li>
+						<li>
+							Benutzt ein Symetrisches Ratchet und ein Diffie-Helman Ratchet in
+							Kombination
+						</li>
+						<li>
+							​Wenn eine Nachricht gesendet oder empfangen wird, wird ein
+							Ratchet-Step mit symmetrischem Schlüssel auf die Sende- oder
+							Empfangskette angewendet, um den Nachrichtenschlüssel abzuleiten.
+						</li>
+					</ul>
+					<a href="https://signal.org/docs/specifications/doubleratchet"
+						>https://signal.org/docs/specifications/doubleratchet</a
+					>
+				</section>
+				<section
+					data-background-image="images/hero_dancing_lines.svg"
+					data-background-size="100%"
+				>
+					<h3>OMEMO</h3>
+					<ul>
+						<li>
+							Wenn ein neuer öffentlicher Ratchet-Key empfangen wird, wird vor
+							dem Ratchet-Key mit symmetrischem Schlüssel ein DH-Ratchet-Step
+							durchgeführt, um die Kettenschlüssel zu ersetzen.
+						</li>
+						<li>
+							Somit kann sollte ein Key-Pair geleakt werden nur 1 Nachricht
+							entschlüsselt werden und nicht die gesamte Nachrichten-Historie
+						</li>
+						<li>Wird verwendet von Signal, XMPP, WhatsApp</li>
+						<li>Olm ist selbes Verfahren nur andere Cryptographie</li>
+					</ul>
+					<a href="https://signal.org/docs/specifications/doubleratchet"
+						>https://signal.org/docs/specifications/doubleratchet</a
+					>
+				</section>
+				<section
+					data-background-image="images/hero_dancing_lines.svg"
+					data-background-size="100%"
+				>
+					<h3>Was ist Megaolm?</h3>
+					<ul>
+						<li>
+							Skaliert besser als OMEMO für Gruppen-Chats, denn OMEMO muss viel
+							mehr Schlüssel verwalten und skaliert grob mit der Anzahl der
+							Raum-Mitglieder
+						</li>
+						<li>
+							Matrix benutzt Megaolm für Gruppen-Chats und Olm für 1:1, OMEMO
+							macht keinen Unterschied zwischen Gruppen- oder Direktchats
+						</li>
+						<li>
+							Wenn ein Benutzer einem Gruppenchat beitritt, generiert er eine
+							Sitzung für diesen Chat. Diese Sitzung besteht aus einem Ed25519
+							SigningKey und einem einzelnen Ratchet, das zufällig initialisiert
+							wird.
+						</li>
+					</ul>
+				</section>
+				<section
+					data-background-image="images/hero_dancing_lines.svg"
+					data-background-size="100%"
+				>
+					<h3>Was ist Megaolm?</h3>
+					<ul>
+						<li>
+							Benutzer betritt Gruppen-Chat -> generiert Sitzung für diesen
+							Chat.
+						</li>
+						<li>
+							Sitzung = Ed25519 SigningKey + einzelnes Ratchet, zufällig
+							initialisiert
+						</li>
+						<li>
+							Öffentlicher Teil vom SigningKey + Ratchet-State werden an alle
+							Teilnehmer verteilt -> Per Olm
+						</li>
+						<li>
+							Diese Olm Sitzung wird zwischen allen Geräten von dem Benutzer
+							geteilt
+						</li>
+						<li>
+							Im Gegensatz zu Olm, wo jedes Gerät seine eigene Olm-Sitzung hat,
+							gibt es pro Benutzer und Gruppenchat nur eine Megolm-Sitzung.
+						</li>
+					</ul>
+				</section>
+				<section
+					data-background-image="images/hero_dancing_lines.svg"
+					data-background-size="100%"
+				>
+					<h3>Was ist Megaolm?</h3>
+					<ul>
+						<li>
+							Beim Versenden -> Generiert symetrischen Encryption-Key durch
+							weiterleiten des Ratchet und Ableiten vom Ratchet. Signierung
+							durch Signing-Key.
+						</li>
+						<li>
+							Empfänger leiten dann das Ratchet des Sender ebenfalls weiter um
+							den selben Encryption-Key zu erhalten. Signierungs-Verifikation
+							durch den öffentlichen Signing-Key des Senders.
+						</li>
+					</ul>
+				</section>
+				<section
+					data-background-image="images/hero_dancing_lines.svg"
+					data-background-size="100%"
+				>
+					<h3>Nachteile</h3>
+					<ul>
+						<li>Nicht so elegant wie OMEMO</li>
+						<li>
+							Wenn ein Angreifer den Ratchet-State erfährt, kann er alle darauf
+							folgenden Nachrichten entschlüsseln
+						</li>
+						<li>
+							Um das zu umgehen, wird jeder Nutzer dazu gezwungen immer eine
+							neue Session zu generieren, wenn ein Benutzer dem Channel betritt
+							oder verlässt.
+						</li>
+						<li>
+							Durch das Teilen des Session-Status können ältere Nachrichten auch
+							geladen werden.
+						</li>
+					</ul>
+				</section>
+				<section
+					data-background-image="images/hero_dancing_lines.svg"
+					data-background-size="100%"
+				>
+					<h3>Vorteile</h3>
+					<ul>
+						<li>
+							Weniger Komplex, da nur jedem Mitglied Vertraut werden muss und
+							nicht jedem Gerät von jedem Mitglied. (Also O(n) und nicht O(k*n))
+						</li>
+						<li>
+							Nachrichten können mehrfach entschlüsselt werden -> Nachrichten
+							müssen nicht enschlüsselt auf dem Gerät abgespeichert werden
+						</li>
+						<li>
+							Durch das Teilen des Session-Status können ältere Nachrichten auch
+							geladen werden.
+						</li>
+					</ul>
+				</section>
+				<section
+					data-background-image="images/hero_dancing_lines.svg"
+					data-background-size="100%"
+				>
+					<h4>Danke für eure Aufmerksamheit 😊</h4>
+					<table>
+						<tbody>
+							<tr>
+								<td>Volt Website</td>
+								<td>
+									<a href="https://voltdeutschland.org/"
+										>https://voltdeutschland.org/</a
+									>
+								</td>
+							</tr>
+							<tr>
+								<td>Fediverse</td>
+								<td>
+									<a href="https://iceshrimp.de/@Yonggan"
+										>@Yonggan@iceshrimp.de</a
+									>
+								</td>
+							</tr>
+							<tr>
+								<td>Matrix</td>
+								<td>
+									<a href="https://matrix.to/#/@yonggan:matrixapp.chat"
+										>@yonggan:matrixapp.chat</a
+									>
+								</td>
+							</tr>
+							<tr>
+								<td>Slides</td>
+								<td>
+									<a href="https://volt-nerdnight.obco.pro/"
+										>https://volt-nerdnight.obco.pro/</a
+									>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</section>
 			</div>
 		</div>
 
@@ -33,7 +282,7 @@
 				hash: true,
 
 				// Learn about plugins: https://revealjs.com/plugins/
-				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+				plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
 			});
 		</script>
 	</body>
